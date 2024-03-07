@@ -19,7 +19,7 @@ import io from "socket.io-client";
 import Lottie from "lottie-react";
 import animationData from "../animation/typing.json";
 
-const ENDPOINT = "https://chat-vibe-backend.vercel.app";
+const ENDPOINT = "https://chatvibe-backend.onrender.com";
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
