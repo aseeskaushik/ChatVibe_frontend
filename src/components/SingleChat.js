@@ -19,7 +19,7 @@ import io from "socket.io-client";
 import Lottie from "lottie-react";
 import animationData from "../animation/typing.json";
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = "https://chat-vibe-backend.vercel.app";
 var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
@@ -84,7 +84,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         !selectedChatCompare ||
         selectedChatCompare._id !== newMessageRecieved.chat._id
       ) {
-        if (!notification.includes(newMessageRecieved )) {
+        if (!notification.includes(newMessageRecieved)) {
           setNotification((prevState) => {
             return [newMessageRecieved, ...prevState];
           });

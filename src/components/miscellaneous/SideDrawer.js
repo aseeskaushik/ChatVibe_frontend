@@ -142,12 +142,12 @@ const SideDrawer = () => {
           </Button>
         </Tooltip>
         <Text fontSize="2xl" fontFamily="Work sans">
-          ChatNovo
+          ChatVibe
         </Text>
         <div>
           <Menu>
             <MenuButton p={1}>
-              <BellIcon fontSize="2xl" ></BellIcon>
+              <BellIcon fontSize="2xl"></BellIcon>
               <Badge count={notification.length}></Badge>
             </MenuButton>
             <MenuList pl={3}>

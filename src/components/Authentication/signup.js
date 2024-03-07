@@ -1,172 +1,135 @@
-import {
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  InputGroup,
-  InputRightElement,
-  VStack,
-  useToast,
-} from "@chakra-ui/react";
+import { Button } from "@chakra-ui/button";
+import { FormControl, FormLabel } from "@chakra-ui/form-control";
+import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
+import { VStack } from "@chakra-ui/layout";
+import { useToast } from "@chakra-ui/toast";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ChatState } from "../../context/ChatProvider";
 
-const SignUp = () => {
+const Signup = () => {
+  const [show, setShow] = useState(false);
+  const handleClick = () => setShow(!show);
+  const toast = useToast();
+  const navigate = useNavigate(); // Replaced useHistory with useNavigate
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState();
-  const [confirmPassword, setConfirmPassword] = useState();
-  const [pic, setPic] = useState();
-  const [show, setShow] = useState(false);
-  const [confirmShow, setConfirmShow] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState("");
+  const [pic, setPic] = useState("");
+  const [picLoading, setPicLoading] = useState(false);
 
-  const navigate = useNavigate();
-  const toast = useToast();
-
-  const nameChangeHandler = (event) => {
-    setName(event.target.value);
-  };
-
-  const emailChangeHandler = (event) => {
-    setEmail(event.target.value);
-  };
-
-  const passwordChangeHandler = (event) => {
-    setPassword(event.target.value);
-  };
-
-  const confirmPasswordChangeHandler = (event) => {
-    setConfirmPassword(event.target.value);
-  };
-
-  const passwordShowHandler = () => {
-    setShow((prevState) => {
-      return !prevState;
-    });
-  };
-
-  const confirmPasswordShowHandler = () => {
-    setConfirmShow((prevState) => {
-      return !prevState;
-    });
-  };
-
-  const picChangeHandler = async (event) => {
-    const pics = event.target.files[0];
-    try {
-      setLoading(true);
-      if (pics === undefined) {
-        toast({
-          title: "Please select am image.",
-          status: "warning",
-          duration: 5000,
-          isClosable: true,
-          position: "bottom",
-        });
-      }
-      if (
-        pics.type === "image/jpeg" ||
-        pics.type === "image/png" ||
-        pics.type === "image/jpg"
-      ) {
-        const data = new FormData();
-        data.append("file", pics);
-        data.append("upload_preset", "Chat-App");
-        data.append("cloud_name", "ritik123");
-        const response = await fetch(
-          "https://api.cloudinary.com/v1_1/ritik123/image/upload",
-          {
-            method: "POST",
-            body: data,
-          }
-        );
-        if (!response.ok) {
-          throw new Error("can not upload the image");
-        }
-        const responseData = await response.json();
-        setPic(responseData.url.toString());
-        setLoading(false);
-      } else {
-        toast({
-          title: "Please select am image.",
-          status: "warning",
-          duration: 5000,
-          isClosable: true,
-          position: "bottom",
-        });
-        setLoading(false);
-        return;
-      }
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    }
-  };
+  const { setUser } = ChatState();
 
   const submitHandler = async () => {
-    setLoading(true);
+    setPicLoading(true);
     if (!name || !email || !password || !confirmPassword) {
       toast({
-        title: "Please enter all the fields",
+        title: "Please fill in all the fields",
         status: "warning",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
-      setLoading(false);
+      setPicLoading(false);
       return;
     }
     if (password !== confirmPassword) {
       toast({
-        title: "confirm password does not match",
+        title: "Passwords do not match",
         status: "warning",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
-      setLoading(false);
+      setPicLoading(false);
       return;
     }
     try {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+        },
+      };
       const { data } = await axios.post(
         "/api/user",
-        { name, email, password, pic },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+          name,
+          email,
+          password,
+          pic,
+        },
+        config
       );
-      if (!data) {
-        throw new Error("Could not register user");
-      }
       toast({
-        title: "Registration successfull",
+        title: "Registration successful",
         status: "success",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
       localStorage.setItem("userInfo", JSON.stringify(data));
-      setLoading(false);
-      navigate("/chats");
-      setName("");
-      setEmail("");
-      setPassword();
-      setConfirmPassword();
-      setPic();
+      setPicLoading(false);
+      setUser(JSON.parse(localStorage.getItem("userInfo")));
+      navigate("/chats"); // Navigate to "/chats" after successful registration
     } catch (error) {
       toast({
-        title: "Error occured",
-        status: "warning",
-        description: error.message,
+        title: "Error occurred",
+        description: error.response.data.message || "Unknown error",
+        status: "error",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
+      setPicLoading(false);
     }
+  };
+
+  const postDetails = (pics) => {
+    setPicLoading(true);
+    if (!pics) {
+      toast({
+        title: "Please select an image",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setPicLoading(false);
+      return;
+    }
+    if (pics.type !== "image/jpeg" && pics.type !== "image/png") {
+      toast({
+        title: "Please select a valid image (JPEG or PNG)",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setPicLoading(false);
+      return;
+    }
+
+    const data = new FormData();
+    data.append("file", pics);
+    data.append("upload_preset", "ChatVibe");
+    data.append("cloud_name", "dl2dazfv8");
+
+    fetch("https://api.cloudinary.com/v1_1/dl2dazfv8/image/upload", {
+      method: "post",
+      body: data,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setPic(data.url.toString());
+        setPicLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setPicLoading(false);
+      });
   };
 
   return (
@@ -176,28 +139,29 @@ const SignUp = () => {
         <Input
           placeholder="Enter your name"
           value={name}
-          onChange={nameChangeHandler}
+          onChange={(e) => setName(e.target.value)}
         />
       </FormControl>
       <FormControl id="email" isRequired>
         <FormLabel>Email</FormLabel>
         <Input
+          type="email"
           placeholder="Enter your email"
           value={email}
-          onChange={emailChangeHandler}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </FormControl>
       <FormControl id="password" isRequired>
         <FormLabel>Password</FormLabel>
-        <InputGroup>
+        <InputGroup size="md">
           <Input
             type={show ? "text" : "password"}
+            placeholder="Enter password"
             value={password}
-            placeholder="password"
-            onChange={passwordChangeHandler}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <InputRightElement width="4.5rem">
-            <Button h="1.75rem" size="sm" onClick={passwordShowHandler}>
+            <Button h="1.75rem" size="sm" onClick={handleClick}>
               {show ? "Hide" : "Show"}
             </Button>
           </InputRightElement>
@@ -207,14 +171,14 @@ const SignUp = () => {
         <FormLabel>Confirm Password</FormLabel>
         <InputGroup size="md">
           <Input
-            type={confirmShow ? "text" : "password"}
-            value={confirmPassword}
+            type={show ? "text" : "password"}
             placeholder="Confirm password"
-            onChange={confirmPasswordChangeHandler}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <InputRightElement width="4.5rem">
-            <Button h="1.75rem" size="sm" onClick={confirmPasswordShowHandler}>
-              {confirmShow ? "Hide" : "Show"}
+            <Button h="1.75rem" size="sm" onClick={handleClick}>
+              {show ? "Hide" : "Show"}
             </Button>
           </InputRightElement>
         </InputGroup>
@@ -223,10 +187,9 @@ const SignUp = () => {
         <FormLabel>Upload your picture</FormLabel>
         <Input
           type="file"
-          value={pic}
           accept="image/*"
           p={1.5}
-          onChange={picChangeHandler}
+          onChange={(e) => postDetails(e.target.files[0])}
         />
       </FormControl>
       <Button
@@ -234,11 +197,12 @@ const SignUp = () => {
         width="100%"
         style={{ marginTop: 15 }}
         onClick={submitHandler}
-        isLoading={loading}
+        isLoading={picLoading}
       >
         Sign Up
       </Button>
     </VStack>
   );
 };
-export default SignUp;
+
+export default Signup;

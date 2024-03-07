@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ChatState } from "../../context/ChatProvider";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +20,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { setUser } = ChatState();
   const toast = useToast();
 
   const emailChangeHandler = (event) => {
@@ -70,6 +72,7 @@ const Login = () => {
       });
       localStorage.setItem("userInfo", JSON.stringify(data));
       setLoading(false);
+      setUser(JSON.parse(localStorage.getItem("userInfo")));
       navigate("/chats");
     } catch (error) {
       toast({

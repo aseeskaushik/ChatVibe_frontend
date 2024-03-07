@@ -5,6 +5,7 @@ import { useEffect } from "react";
 // import { AddIcon } from "@chakra-ui/icons";
 import ChatLoading from "./miscellaneous/ChatLoading";
 import GroupChatDrawer from "./miscellaneous/GroupChatDrawer";
+var flag = false;
 
 const MyChats = ({ fetchAgain }) => {
   const {
@@ -19,8 +20,8 @@ const MyChats = ({ fetchAgain }) => {
   // const [loggedUser, setLoggedUser] = useState();
 
   const toast = useToast();
-
   const fetchChats = async () => {
+    flag = false;
     try {
       const config = {
         headers: {
@@ -28,6 +29,7 @@ const MyChats = ({ fetchAgain }) => {
         },
       };
       const { data } = await axios.get("/api/chat", config);
+      flag = true;
       setChats(data);
     } catch (error) {
       toast({
@@ -49,7 +51,7 @@ const MyChats = ({ fetchAgain }) => {
 
   const getSender = (users) => {
     // console.log(user);
-    return users[0]._id === user._id ? users[1].name : users[0].name;
+    return users[0]?._id === user._id ? users[1]?.name : users[0]?.name;
   };
 
   return (
@@ -114,9 +116,11 @@ const MyChats = ({ fetchAgain }) => {
                 py={2}
                 borderRadius="lg"
               >
-                <Text key={chat._id}>
-                  {chat.isGroupChat ? chat.chatName : getSender(chat.users)}
-                </Text>
+                {flag && (
+                  <Text key={chat._id}>
+                    {chat.isGroupChat ? chat?.chatName : getSender(chat.users)}
+                  </Text>
+                )}
               </Box>
             ))}
           </Stack>
